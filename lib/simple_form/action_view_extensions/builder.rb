@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 module SimpleForm
   module ActionViewExtensions
     # Base builder to handle each instance of a collection of radio buttons / check boxes.
@@ -238,7 +239,7 @@ module SimpleForm
       end
 
       def sanitize_attribute_name(attribute, value) #:nodoc:
-        "#{attribute}_#{value.to_s.gsub(/\s/, "_").gsub(/[^-\w]/, "").downcase}"
+        "#{attribute}_#{value.to_s.gsub(/\s/, "_").gsub(/[^-\p{L}]/, "").downcase}"
       end
 
       def render_collection(collection, value_method, text_method, options={}, html_options={}) #:nodoc:
@@ -349,6 +350,19 @@ module ActionView::Helpers
       hidden = unchecked_value ? tag("input", "name" => options["name"], "type" => "hidden", "value" => unchecked_value, "disabled" => options["disabled"]) : "".html_safe
       checkbox = tag("input", options)
       hidden + checkbox
+    end
+
+    private
+
+    def add_default_name_and_id_for_value(tag_value, options)
+      unless tag_value.nil?
+        pretty_tag_value = tag_value.to_s.gsub(/\s/, "_").gsub(/[^-\p{L}]/, "").downcase
+        specified_id = options["id"]
+        add_default_name_and_id(options)
+        options["id"] += "_#{pretty_tag_value}" if specified_id.blank? && options["id"].present?
+      else
+        add_default_name_and_id(options)
+      end
     end
   end
 end
